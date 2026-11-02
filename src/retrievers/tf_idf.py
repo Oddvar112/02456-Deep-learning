@@ -84,13 +84,13 @@ class TFIDF(Retriever):
         n_terms = len(self.corpus_vocabulary)
         tfidf_matrix = lil_matrix((n_documents, n_terms), dtype=np.float32)
 
-        # tf(t, d) = (times t occurs in d) / (number of words in d)
+        # tf(t, d) = (times t occurs in d) / (times the most frequent word in d occurs)
         # tf-idf(t, d) = tf(t, d) * idf(t)
         for i, document in enumerate(self.index.GetDocuments()):
             term_counts = self.GetDocumentTermCounts(document)
-            document_length = sum(term_counts.values())
+            max_count = max(term_counts.values(), default=1)  # default=1 for empty documents
             term_indices = [self.term_to_index[term] for term in term_counts]
-            tfidf_values = [count / document_length * self.idf[term] for term, count in term_counts.items()]
+            tfidf_values = [count / max_count * self.idf[term] for term, count in term_counts.items()]
             tfidf_matrix[i, term_indices] = tfidf_values  
 
         return tfidf_matrix.tocsr()   # Convert to CSR format for efficient row slicing
