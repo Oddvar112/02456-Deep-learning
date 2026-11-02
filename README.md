@@ -10,6 +10,12 @@ Requires Python 3.10+.
 pip install -r requirements.txt
 ```
 
+### Download the tokenizer
+
+```bash
+python -c "from transformers import AutoTokenizer; AutoTokenizer.from_pretrained('bert-base-uncased')"
+```
+
 ## Usage
 
 ```bash
