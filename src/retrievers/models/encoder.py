@@ -2,7 +2,27 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import numpy as np
-from math import sqrt
+from math import sqrt, log
+
+class PositionalEncoding(nn.Module):
+    def __init__(self, emb_dim: int, max_len: int = 256):
+        super().__init__()
+
+        # pos = 0, 1, …, max_len-1
+        pos = torch.arange(max_len).unsqueeze(1)
+        # 2i = 0, 2, …, emb_dim-2
+        two_i = torch.arange(0, emb_dim, 2)
+        # pos / 10000^(2i/d)   
+        angle = pos / 10000 ** (two_i / emb_dim)
+
+        pe = torch.zeros(max_len, emb_dim)
+        pe[:, 0::2] = torch.sin(angle)
+        pe[:, 1::2] = torch.cos(angle)
+
+        self.pe = pe
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return x + self.pe[:, : x.size(1)].to(x.device)
 
 class TransformerEncoder(nn.Module):
     def __init__(self, n_layers: int, n_heads: int, emb_dim: int, hidden_dim: int, feed_forward_dim: int):
@@ -19,8 +39,8 @@ class TransformerEncoder(nn.Module):
         """
         # Embedding(number of dim (30522/bert vocab size), vector length, padding id(0 standard for bert))
         self.token_embedding = nn.Embedding(30522, self.emb_dim, 0)
-        self.positional_encoding = NotImplementedError()
-        self.dropout = NotImplementedError()
+        self.positional_encoding = PositionalEncoding(self.emb_dim)
+        self.dropout = nn.Dropout(self.dropout_p)
         self.layers = NotImplementedError()
         self.final_norm = NotImplementedError()
 
@@ -47,9 +67,8 @@ class TransformerEncoder(nn.Module):
         Run a forward pass on the model
         """
         self.token_embedding(x) * sqrt(self.emb_dim)
-
-        #self.positional_encoding(x)
-        #self.dropout(x)
+        self.positional_encoding(x)
+        self.dropout(x)
         #self.layers(x)
         #self.final_norm(x)
         return 
