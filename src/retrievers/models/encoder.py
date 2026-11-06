@@ -17,7 +17,8 @@ class TransformerEncoder(nn.Module):
         """
         Instantiate the model.
         """
-        self.token_embedding = NotImplementedError()
+        # Embedding(number of dim (30522/bert vocab size), vector length, padding id(0 standard for bert))
+        self.token_embedding = nn.Embedding(30522, self.emb_dim, 0)
         self.positional_encoding = NotImplementedError()
         self.dropout = NotImplementedError()
         self.layers = NotImplementedError()
@@ -45,4 +46,10 @@ class TransformerEncoder(nn.Module):
         """
         Run a forward pass on the model
         """
-        raise NotImplementedError()
+        self.token_embedding(x) * sqrt(self.emb_dim)
+
+        #self.positional_encoding(x)
+        #self.dropout(x)
+        #self.layers(x)
+        #self.final_norm(x)
+        return 
