@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
+import numpy as np
 from math import sqrt
 
 class TransformerEncoder(nn.Module):
@@ -16,8 +17,15 @@ class TransformerEncoder(nn.Module):
         """
         Instantiate the model.
         """
-        self.model = None
+        self.token_embedding = NotImplementedError()
+        self.positional_encoding = NotImplementedError()
+        self.dropout = NotImplementedError()
+        self.layers = NotImplementedError()
+        self.final_norm = NotImplementedError()
+
         raise NotImplementedError()
+
+
 
     def pool(self, x):
         """
@@ -25,13 +33,13 @@ class TransformerEncoder(nn.Module):
         Returns: A pooled vector of shape batch_size x emb_dim
         """
         if self.cfg.model.pooling_type == 'cls':
-            raise NotImplementedError()
+            return x[:, 0, :]
         
         elif self.cfg.model.pooling_type == 'max':
-            raise NotImplementedError()
+            return x.max(dim=1).values
         
         elif self.cfg.model.pooling_type == 'mean':
-            raise NotImplementedError()
+            return x.mean(dim=1)
 
     def forward(self, x: torch.tensor) -> torch.tensor:
         """
