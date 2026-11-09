@@ -31,6 +31,6 @@ def Evaluate(relevancies: list[list[bool]], queries: list[Query]):
     
 
     scores['recall'] = total_recall / n_queries
-    scores['precision@k'] = total_precision / n_queries
+    scores['precision'] = total_precision / n_queries
     scores['mrr'] = total_mrr / n_queries
     return scores
