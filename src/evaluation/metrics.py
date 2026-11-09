@@ -26,7 +26,7 @@ def Evaluate(relevancies: list[list[bool]], queries: list[Query]):
     
     for i in range(n_queries):
         total_recall += calculateRecall(relevancies[i], queries[i])
-        total_precision += calculatePrecisionAtK(relevancies[i])
+        total_precision += calculatePrecision(relevancies[i])
         total_mrr += calculateReciprocalRank(relevancies[i])
     
 
