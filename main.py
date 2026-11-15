@@ -5,6 +5,7 @@ from src.data_utils.query import Query
 from src.retrievers.utils import retrieveQueryAndGetRelevancies
 from src.evaluation.metrics import Evaluate
 from src.retrievers.bm25 import BM25
+from src.retrievers.dpr import DPR
 
 @hydra.main(config_path='config', config_name='fiqa_experiment.yaml', version_base=None)
 def main(cfg):
@@ -66,6 +67,21 @@ def main(cfg):
     print(f'BM25 Train results: {bm25_train_scores}')
     print(f'BM25 Val results: {bm25_val_scores}')
     print(f'BM25 Test results: {bm25_test_scores}')
+
+    ### Initialize DPR class
+    dpr = DPR(cfg=cfg, corpus=corpus)
+
+    dpr_train_relevancies = retrieveQueryAndGetRelevancies(dpr, train_queries, k=cfg.top_k)
+    dpr_val_relevancies   = retrieveQueryAndGetRelevancies(dpr, val_queries, k=cfg.top_k)
+    dpr_test_relevancies  = retrieveQueryAndGetRelevancies(dpr, test_queries, k=cfg.top_k)
+
+    dpr_train_scores     = Evaluate(dpr_train_relevancies, train_queries)
+    dpr_val_scores       = Evaluate(dpr_val_relevancies, val_queries)
+    dpr_test_scores      = Evaluate(dpr_test_relevancies, test_queries)
+
+    print(f'DPR Train results: {dpr_train_scores}')
+    print(f'DPR Val results: {dpr_val_scores}')
+    print(f'DPR Test results: {dpr_test_scores}')
 
 if __name__ == '__main__':
     main()
