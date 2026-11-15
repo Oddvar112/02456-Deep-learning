@@ -1,7 +1,8 @@
 defaults:
   - _self_  # Hydra magic
   - dataset: fiqa
-  - retriever: tf_idf
+  - retriever: dpr
+  - model: encoder
 
 
 device: cpu

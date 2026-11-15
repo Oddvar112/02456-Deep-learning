@@ -1,6 +1,9 @@
 method: "dpr"
+max_epochs: 5
+lr: 1.0e-4
+batch_size: 32
 query_max_length: 64
 document_max_length: 256
-batch_size: 32
-query_encoder_weights_path: ""
-document_encoder_weights_path: ""
+weights_dir: "outputs/weights"
+query_encoder_weights_file: "query_encoder.pt"
+document_encoder_weights_file: "document_encoder.pt"
