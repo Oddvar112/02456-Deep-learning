@@ -96,7 +96,7 @@ class TransformerLayer(nn.Module):
 
 
 class TransformerEncoder(nn.Module):
-    def __init__(self, n_layers: int, n_heads: int, emb_dim: int, hidden_dim: int, feed_forward_dim: int):
+    def __init__(self, n_layers: int, n_heads: int, emb_dim: int, hidden_dim: int, feed_forward_dim: int, pooling_type: str = 'cls'):
         super().__init__()
         self.n_layers = n_layers
         self.n_heads = n_heads
@@ -104,6 +104,7 @@ class TransformerEncoder(nn.Module):
         self.hidden_dim = hidden_dim
         self.feed_forward_dim = feed_forward_dim
         self.dropout_p = 0.1
+        self.pooling_type = pooling_type
         self.setup_model()
 
     def setup_model(self):
@@ -120,13 +121,13 @@ class TransformerEncoder(nn.Module):
         self.layers = nn.ModuleList(layers)
 
     def pool(self, x):
-        if self.cfg.model.pooling_type == 'cls':
+        if self.pooling_type == 'cls':
             return x[:, 0, :]
         
-        elif self.cfg.model.pooling_type == 'max':
+        elif self.pooling_type == 'max':
             return x.max(dim=1).values
         
-        elif self.cfg.model.pooling_type == 'mean':
+        elif self.pooling_type == 'mean':
             return x.mean(dim=1)
 
     def forward(self, x: torch.Tensor, attention_mask=None) -> torch.Tensor:

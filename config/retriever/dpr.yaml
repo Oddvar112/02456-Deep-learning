@@ -1,1 +1,11 @@
 method: "dpr"
+
+# Hyperparameters (override at runtime: python main.py retriever.field=value)
+query_max_length: 64
+document_max_length: 256
+batch_size: 32
+
+# Weights — set to a file path when you have pre-trained checkpoints.
+# Leave as empty string to train from scratch via Trainer first.
+query_encoder_weights_path: ""
+document_encoder_weights_path: ""
