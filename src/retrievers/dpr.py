@@ -7,12 +7,59 @@ from src.data_utils.dataloader import tokenize
 
 
 class DPR(Retriever):
-    def __init__(self, cfg):
+    def __init__(self, cfg, corpus=None):
         self.cfg = cfg
+        
+        # Read weight paths from config (no hardcoding)
+        weights_dir = getattr(cfg.retriever, 'weights_dir', 'outputs/weights')
+        q_file  = getattr(cfg.retriever, 'query_encoder_weights_file', 'query_encoder.pt')
+        d_file  = getattr(cfg.retriever, 'document_encoder_weights_file', 'document_encoder.pt')
+        
+        self.query_weights_path = os.path.join(weights_dir, q_file)
+        self.document_weights_path = os.path.join(weights_dir, d_file)
+        
+        # Check if trained weights exist; auto-train if missing and corpus is available
+        weights_exist = (os.path.exists(self.query_weights_path) and 
+                         os.path.exists(self.document_weights_path))
+        
+        if not weights_exist and corpus is not None:
+            print('\n--- Training DPR from scratch ---')
+            self._train_from_scratch(cfg, corpus)
+                
+        # Build device and encoders (loaded or random init)
         self.device = torch.device(cfg.device)
-        self._load_models()
-        self.doc_embeddings = self._encode_documents()
+        self._load_models()                    # loads saved weights if available
+        self.doc_embeddings = self.__encode_documents(self.index.GetDocuments())  # encodes doc texts using loaded document_encoder
     
+    def _train_from_scratch(self, cfg, corpus):
+        from src.training.trainer import Trainer
+        from src.retrievers.models.encoder import TransformerEncoder
+        from src.data_utils.dataloader import make_loader
+        
+        epochs = getattr(cfg.retriever, 'max_epochs', 5) or 5
+        lr = getattr(cfg.retriever, 'lr', 1e-4) or 1e-4
+        batch_size = getattr(cfg.retriever, 'batch_size', 32)
+        
+        enc_cfg = dict(
+            n_layers=cfg.model.n_layers,
+            n_heads=cfg.model.n_heads,
+            emb_dim=cfg.model.emb_dim,
+            hidden_dim=cfg.model.hidden_dim,
+            feed_forward_dim=cfg.model.feed_forward_dim,
+            pooling_type=cfg.model.pooling_type,
+        )
+        
+        Trainer().train(
+            TransformerEncoder(**enc_cfg),
+            TransformerEncoder(**enc_cfg),
+            make_loader(corpus.train, shuffle=True, batch_size=batch_size),
+            make_loader(corpus.val, shuffle=False),
+            epochs=epochs,
+            lr=lr,
+            device=cfg.device,
+            weights_dir=self.query_weights_path.rsplit('/', 1)[0],
+        )
+        
     def _load_models(self):
         """Build encoders and load pretrained weights if available."""
         m = self.cfg.model
@@ -31,27 +78,24 @@ class DPR(Retriever):
         query_encoder.to(self.device)
         document_encoder.to(self.device)
         
-        # Load query encoder weights if provided and file exists
-        q_path = self.cfg.retriever.get('query_encoder_weights_path', None)
-        if q_path is not None and os.path.exists(q_path):
-            state_dict = torch.load(q_path, map_location=self.device, weights_only=True)
+        # Load query encoder weights if file exists
+        if os.path.exists(self.query_weights_path):
+            state_dict = torch.load(self.query_weights_path, map_location=self.device, weights_only=True)
             query_encoder.load_state_dict(state_dict)
 
-        # Load document encoder weights if provided and file exists
-        d_path = self.cfg.retriever.get('document_encoder_weights_path', None)
-        if d_path is not None and os.path.exists(d_path):
-            state_dict = torch.load(d_path, map_location=self.device, weights_only=True)
+        # Load document encoder weights if file exists
+        if os.path.exists(self.document_weights_path):
+            state_dict = torch.load(self.document_weights_path, map_location=self.device, weights_only=True)
             document_encoder.load_state_dict(state_dict)
 
         # Set loaded encoders so they can be accessed by other methods / tests
         self.query_encoder = query_encoder
         self.document_encoder = document_encoder
 
-    def _encode_documents(self) -> torch.Tensor:
+    def _encode_documents(self, doc_texts: list[str]) -> torch.Tensor:
         """Encode all corpus documents once (like TF-IDF's corpus matrix)."""
-        doc_texts = [d.GetText() for d in self.index.GetDocuments()]
-        batch_size = getattr(self.cfg.retriever, 'batch_size', 32)
         max_length = self.cfg.retriever.document_max_length
+        batch_size = getattr(self.cfg.retriever, 'batch_size', 32)
         
         all_embs = []
         self.document_encoder.eval()
@@ -75,11 +119,3 @@ class DPR(Retriever):
         with torch.no_grad():
             score = self.query_encoder(ids) @ self.doc_embeddings.T
         return score.numpy()  # (n_queries, n_docs)
-
-
-# --- Retriever integration -------------------------------------------------
-
-    
-
-        
-
