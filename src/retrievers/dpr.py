@@ -1,4 +1,5 @@
 import os
+import json
 import torch
 
 from src.retrievers.base_retriever import Retriever
@@ -8,6 +9,7 @@ from src.data_utils.dataloader import tokenize
 
 class DPR(Retriever):
     def __init__(self, cfg, corpus=None):
+        super().__init__(corpus.all_documents)
         self.cfg = cfg
         
         # Read weight paths from config (no hardcoding)
@@ -29,7 +31,8 @@ class DPR(Retriever):
         # Build device and encoders (loaded or random init)
         self.device = torch.device(cfg.device)
         self._load_models()                    # loads saved weights if available
-        self.doc_embeddings = self.__encode_documents(self.index.GetDocuments())  # encodes doc texts using loaded document_encoder
+        doc_texts = [document.GetText() for document in self.index.GetDocuments()]
+        self.doc_embeddings = self._encode_documents(doc_texts)
     
     def _train_from_scratch(self, cfg, corpus):
         from src.training.trainer import Trainer
@@ -49,7 +52,8 @@ class DPR(Retriever):
             pooling_type=cfg.model.pooling_type,
         )
         
-        Trainer().train(
+        weights_dir = os.path.dirname(self.query_weights_path)
+        history = Trainer().train(
             TransformerEncoder(**enc_cfg),
             TransformerEncoder(**enc_cfg),
             make_loader(corpus.train, shuffle=True, batch_size=batch_size),
@@ -57,8 +61,12 @@ class DPR(Retriever):
             epochs=epochs,
             lr=lr,
             device=cfg.device,
-            weights_dir=self.query_weights_path.rsplit('/', 1)[0],
+            weights_dir=weights_dir,
         )
+
+        # used for the loss plot in results.ipynb
+        with open(os.path.join(weights_dir, 'history.json'), 'w') as f:
+            json.dump(history, f)
         
     def _load_models(self):
         """Build encoders and load pretrained weights if available."""
@@ -117,5 +125,5 @@ class DPR(Retriever):
         ids = tokenize(queries, max_length).to(self.device)
         self.query_encoder.eval()
         with torch.no_grad():
-            score = self.query_encoder(ids) @ self.doc_embeddings.T
+            score = self.query_encoder(ids).cpu() @ self.doc_embeddings.T
         return score.numpy()  # (n_queries, n_docs)
