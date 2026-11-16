@@ -25,16 +25,16 @@ class DPR(Retriever):
                          os.path.exists(self.document_weights_path))
         
         if not weights_exist and corpus is not None:
-            print('\n--- Training DPR from scratch ---')
-            self._train_from_scratch(cfg, corpus)
+            print('\nTraining DPR from scratch')
+            self.TrainFromScratch(cfg, corpus)
                 
         # Build device and encoders (loaded or random init)
         self.device = torch.device(cfg.device)
-        self._load_models()                    # loads saved weights if available
+        self.LoadModels()                    # loads saved weights if available
         doc_texts = [document.GetText() for document in self.index.GetDocuments()]
-        self.doc_embeddings = self._encode_documents(doc_texts)
+        self.doc_embeddings = self.EncodeDocuments(doc_texts)
     
-    def _train_from_scratch(self, cfg, corpus):
+    def TrainFromScratch(self, cfg, corpus):
         from src.training.trainer import Trainer
         from src.retrievers.models.encoder import TransformerEncoder
         from src.data_utils.dataloader import make_loader
@@ -68,7 +68,7 @@ class DPR(Retriever):
         with open(os.path.join(weights_dir, 'history.json'), 'w') as f:
             json.dump(history, f)
         
-    def _load_models(self):
+    def LoadModels(self):
         """Build encoders and load pretrained weights if available."""
         m = self.cfg.model
         
@@ -100,7 +100,7 @@ class DPR(Retriever):
         self.query_encoder = query_encoder
         self.document_encoder = document_encoder
 
-    def _encode_documents(self, doc_texts: list[str]) -> torch.Tensor:
+    def EncodeDocuments(self, doc_texts: list[str]) -> torch.Tensor:
         """Encode all corpus documents once (like TF-IDF's corpus matrix)."""
         max_length = self.cfg.retriever.document_max_length
         batch_size = getattr(self.cfg.retriever, 'batch_size', 32)
