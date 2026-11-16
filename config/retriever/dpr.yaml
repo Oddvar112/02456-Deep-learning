@@ -1,7 +1,7 @@
 method: "dpr"
-max_epochs: 50
-lr: 1.0e-4
-batch_size: 32
+max_epochs: 120
+lr: 5.0e-5
+batch_size: 128
 query_max_length: 64
 document_max_length: 256
 weights_dir: "outputs/weights"
