@@ -68,6 +68,7 @@ def main(cfg):
     # print(f'BM25 Val results: {bm25_val_scores}')
     # print(f'BM25 Test results: {bm25_test_scores}')
 
+    
     ### Initialize DPR class
     dpr = DPR(cfg=cfg, corpus=corpus)
 
