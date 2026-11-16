@@ -69,20 +69,26 @@ def main(cfg):
     # print(f'BM25 Test results: {bm25_test_scores}')
 
     
-    ### Initialize DPR class
-    dpr = DPR(cfg=cfg, corpus=corpus)
+    ### Train and evaluate one DPR model for each pooling type
+    for pooling in ['cls', 'mean', 'max']:
+        cfg.model.pooling_type = pooling
+        # Each model gets its own folder
+        cfg.retriever.weights_dir = f'outputs/weights_{pooling}_b{cfg.retriever.batch_size}'
 
-    dpr_train_relevancies = retrieveQueryAndGetRelevancies(dpr, train_queries, k=cfg.top_k)
-    dpr_val_relevancies   = retrieveQueryAndGetRelevancies(dpr, val_queries, k=cfg.top_k)
-    dpr_test_relevancies  = retrieveQueryAndGetRelevancies(dpr, test_queries, k=cfg.top_k)
+        ### Initialize DPR class
+        dpr = DPR(cfg=cfg, corpus=corpus)
 
-    dpr_train_scores     = Evaluate(dpr_train_relevancies, train_queries)
-    dpr_val_scores       = Evaluate(dpr_val_relevancies, val_queries)
-    dpr_test_scores      = Evaluate(dpr_test_relevancies, test_queries)
+        dpr_train_relevancies = retrieveQueryAndGetRelevancies(dpr, train_queries, k=cfg.top_k)
+        dpr_val_relevancies   = retrieveQueryAndGetRelevancies(dpr, val_queries, k=cfg.top_k)
+        dpr_test_relevancies  = retrieveQueryAndGetRelevancies(dpr, test_queries, k=cfg.top_k)
 
-    print(f'DPR Train results: {dpr_train_scores}')
-    print(f'DPR Val results: {dpr_val_scores}')
-    print(f'DPR Test results: {dpr_test_scores}')
+        dpr_train_scores     = Evaluate(dpr_train_relevancies, train_queries)
+        dpr_val_scores       = Evaluate(dpr_val_relevancies, val_queries)
+        dpr_test_scores      = Evaluate(dpr_test_relevancies, test_queries)
+
+        print(f'DPR {pooling} Train results: {dpr_train_scores}')
+        print(f'DPR {pooling} Val results: {dpr_val_scores}')
+        print(f'DPR {pooling} Test results: {dpr_test_scores}')
 
 if __name__ == '__main__':
     main()
