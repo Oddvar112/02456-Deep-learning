@@ -7,7 +7,7 @@ class Trainer:
     def __init__(self):
         self.criterion = DPRLoss()
 
-    def train(self, query_encoder: nn.Module, document_encoder: nn.Module, train_loader, val_loader, epochs: int = 10, lr: float = 1e-4, device: str = 'cpu', weights_dir: str = 'outputs/weights'):
+    def train(self, query_encoder: nn.Module, document_encoder: nn.Module, train_loader, val_loader, epochs: int = 10, lr: float = 1e-4, device: str = 'cpu', weights_dir: str = 'outputs/weights', patience: int = 10):
         
         # Move the models to CPU or GPU
         query_encoder.to(device)
@@ -18,8 +18,9 @@ class Trainer:
 
         history = {'train_loss': [], 'val_loss': []}
         best_val_loss = float('inf')
+        epochs_without_improvement = 0
 
-        for epoch in range(epochs):  
+        for epoch in range(epochs):
 
             query_encoder.train()     # training mode
             document_encoder.train()
@@ -47,7 +48,14 @@ class Trainer:
             # Save the weights when the validation loss is the best so far
             if history['val_loss'][-1] < best_val_loss:
                 best_val_loss = history['val_loss'][-1]
+                epochs_without_improvement = 0
                 self.save_weights(query_encoder, document_encoder, weights_dir)
+            else:
+                epochs_without_improvement += 1
+                # Early stopping
+                if epochs_without_improvement == patience:
+                    print(f'Early stopping after epoch {epoch + 1}')
+                    break
 
         return history
 
