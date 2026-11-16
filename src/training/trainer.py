@@ -13,11 +13,11 @@ class Trainer:
         query_encoder.to(device)
         document_encoder.to(device)
         
-        query_optimizer = torch.optim.AdamW(query_encoder.parameters(), lr=lr)
-        document_optimizer = torch.optim.AdamW(document_encoder.parameters(), lr=lr)
+        query_optimizer = torch.optim.AdamW(query_encoder.parameters(), lr=lr, weight_decay=0.1)
+        document_optimizer = torch.optim.AdamW(document_encoder.parameters(), lr=lr, weight_decay=0.1)
 
-        history = {'train_loss': [], 'val_loss': []}  
-        best_val_loss = float('inf')                  
+        history = {'train_loss': [], 'val_loss': []}
+        best_val_loss = float('inf')
 
         for epoch in range(epochs):  
 

@@ -103,7 +103,7 @@ class TransformerEncoder(nn.Module):
         self.emb_dim =    emb_dim
         self.hidden_dim = hidden_dim
         self.feed_forward_dim = feed_forward_dim
-        self.dropout_p = 0.1
+        self.dropout_p = 0.2
         self.pooling_type = pooling_type
         self.setup_model()
 
