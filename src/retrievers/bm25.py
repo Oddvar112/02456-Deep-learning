@@ -45,8 +45,10 @@ class BM25(TFIDF):
             for term, termFrequency in countTerm.items():
                 # Looks up the index of the term in the matrix
                 column = self.term_to_index[term]
+                # BM25 IDF from the assignment log((N + 1) / (n + 0.5))
+                idf = np.log((number_of_documents + 1) / (self.document_frequencies[term] + 0.5))
                 # BM25 formular: IDF(q) * ( f(q,d) * (k1 + 1) ) / ( f(q,d) + k1 * (1 - b + b * DocumentLength / avarageDocumentLength))
-                matrix[row, column] = self.idf[term] * (termFrequency * (self.k1 + 1)) / (termFrequency + self.k1 * (1 - self.b + (self.b * self.document_lengths[document] / self.average_document_length)))
+                matrix[row, column] = idf *(termFrequency * (self.k1 + 1)) / (termFrequency + self.k1 * (1 - self.b + (self.b * self.document_lengths[document] / self.average_document_length)))
 
         return matrix
 
