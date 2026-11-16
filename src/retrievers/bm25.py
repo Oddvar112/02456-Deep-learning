@@ -23,31 +23,32 @@ class BM25(TFIDF):
     
     def ComputeBM25Matrix(self):
         documents = self.index.GetDocuments()
+
+        # Get the number of documents
         number_of_documents = len(documents)
 
         # Create matrix from scipy parse 
         matrix = lil_matrix((number_of_documents, len(self.corpus_vocabulary)))
 
-        # Count the terms 
+        # Map the terms to corresponding index in the matrix 
         self.term_to_index = {term: idx for idx, term in enumerate(self.corpus_vocabulary)}
 
-        # Get values from GetDocuemtLengths method
+        # Get values from GetDocumentLengths method
         self.document_frequencies = self.GetDocumentFrequencies()
         self.document_lengths, self.average_document_length = self.GetDocumentLengths()
 
         for row, document in enumerate(documents):
+            # Get the term counts for the document
             countTerm = self.GetDocumentTermCounts(document)
+
+            # Calculate the BM25 score for each term in the document and store it in the matrix
             for term, termFrequency in countTerm.items():
+                # Looks up the index of the term in the matrix
                 column = self.term_to_index[term]
-                # BM25 formular: IDF(q) * ( f(q,D) * (k1 + 1) ) / ( f(q,D) + k1 * (1 - b + b * |D| / avgdl))
-                matrix[row, column] = self.getIDF(term) * (termFrequency * (self.k1 + 1)) / (termFrequency + self.k1 * (1 - self.b + (self.b * self.document_lengths[document] / self.average_document_length)))
+                # BM25 formular: IDF(q) * ( f(q,d) * (k1 + 1) ) / ( f(q,d) + k1 * (1 - b + b * DocumentLength / avarageDocumentLength))
+                matrix[row, column] = self.idf[term] * (termFrequency * (self.k1 + 1)) / (termFrequency + self.k1 * (1 - self.b + (self.b * self.document_lengths[document] / self.average_document_length)))
 
-        return matrix.tocsr()
-
-    def getIDF(self, term: str) -> float:
-        # Formular: IDF(q) = log((index - freq(q) + 0.5) / (freq(q) + 0.5) + 1 )
-        DocumentFreq = self.document_frequencies.get(term, 0)
-        return np.log((len(self.index.GetDocuments()) - DocumentFreq + 0.5) / (DocumentFreq + 0.5) + 1)
+        return matrix
 
     def CalculateScores(self, queries: list[str]):
         """Calculate scores for a query
