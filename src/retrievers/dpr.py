@@ -57,7 +57,7 @@ class DPR(Retriever):
             TransformerEncoder(**enc_cfg),
             TransformerEncoder(**enc_cfg),
             make_loader(corpus.train, shuffle=True, batch_size=batch_size),
-            make_loader(corpus.val, shuffle=False),
+            make_loader(corpus.val, shuffle=True),
             epochs=epochs,
             lr=lr,
             device=cfg.device,

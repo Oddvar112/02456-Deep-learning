@@ -131,6 +131,10 @@ class TransformerEncoder(nn.Module):
             return x.mean(dim=1)
 
     def forward(self, x: torch.Tensor, attention_mask=None) -> torch.Tensor:
+        # Padding
+        if attention_mask is None:
+            attention_mask = (x != 0)
+
         x = self.token_embedding(x) * sqrt(self.emb_dim)
         x = self.positional_encoding(x)
         x = self.dropout(x)
