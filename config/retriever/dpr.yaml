@@ -1,5 +1,5 @@
 method: "dpr"
-max_epochs: 5
+max_epochs: 50
 lr: 1.0e-4
 batch_size: 32
 query_max_length: 64
