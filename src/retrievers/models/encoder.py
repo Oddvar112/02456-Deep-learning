@@ -120,20 +120,25 @@ class TransformerEncoder(nn.Module):
         
         self.layers = nn.ModuleList(layers)
 
-    def pool(self, x):
+    def pool(self, x, attention_mask):
+        mask = attention_mask.unsqueeze(-1)
+
         if self.pooling_type == 'cls':
             return x[:, 0, :]
-        
+
         elif self.pooling_type == 'max':
-            return x.max(dim=1).values
-        
+            return x.masked_fill(mask == 0, float('-inf')).max(dim=1).values
+
         elif self.pooling_type == 'mean':
-            return x.mean(dim=1)
+            # Average over the real tokens only
+            return (x * mask).sum(dim=1) / mask.sum(dim=1)
 
     def forward(self, x: torch.Tensor, attention_mask=None) -> torch.Tensor:
         # Padding
         if attention_mask is None:
             attention_mask = (x != 0)
+
+       # attention_mask is what tokens are real and which are padding 
 
         x = self.token_embedding(x) * sqrt(self.emb_dim)
         x = self.positional_encoding(x)
@@ -142,4 +147,4 @@ class TransformerEncoder(nn.Module):
         for layer in self.layers:
             x = layer(x, attention_mask)
 
-        return self.pool(x)               
+        return self.pool(x, attention_mask)               
