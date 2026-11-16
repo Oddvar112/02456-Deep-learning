@@ -5,7 +5,7 @@ defaults:
   - model: encoder
 
 
-device: cpu
+device: cuda
 base_path: "."
 top_k: 10
 
