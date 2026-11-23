@@ -18,8 +18,14 @@ python -c "from transformers import AutoTokenizer; AutoTokenizer.from_pretrained
 
 ## Usage
 
+For replicating the results in the report, go run the results.ipynb notebook. 
+TF-IDF and BM-25 is commented out in the main.py such that if you run the notebook, which calls the main sepperatly, you wont compute TF-IDF and BM-25 twice. 
+
+If you would like to only run the main.py, then uncomment from line 36-69. 
+
+
 ```bash
-python main.py            # Run TF-IDF on FIQA
+python main.py            
 python main.py top_k=20   # Override a config value
 ```
 
