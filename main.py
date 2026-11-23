@@ -33,40 +33,40 @@ def main(cfg):
                         for idx in range(corpus.test.num_rows)
                     ]
     
-    # ### Initialize TF-IDF class
-    # tf_idf = TFIDF(documents=corpus.all_documents)
-    #
-    # ### Retrieve top-k relevant queries
-    # tfidf_train_relevancies = retrieveQueryAndGetRelevancies(tf_idf, train_queries, k=cfg.top_k)
-    # tfidf_val_relevancies = retrieveQueryAndGetRelevancies(tf_idf, val_queries, k=cfg.top_k)
-    # tfidf_test_relevancies = retrieveQueryAndGetRelevancies(tf_idf, test_queries, k=cfg.top_k)
-    #
-    # ### Evaluate TF-IDF class
-    # tfidf_train_scores = Evaluate(tfidf_train_relevancies, train_queries)
-    # tfidf_val_scores = Evaluate(tfidf_val_relevancies, val_queries)
-    # tfidf_test_scores = Evaluate(tfidf_test_relevancies, test_queries)
-    #
-    # print(f'TF-IDF Train results: {tfidf_train_scores}')
-    # print(f'TF-IDF Val results: {tfidf_val_scores}')
-    # print(f'TF-IDF Test results: {tfidf_test_scores}')
+    ### Initialize TF-IDF class
+    tf_idf = TFIDF(documents=corpus.all_documents)
+    
+    ### Retrieve top-k relevant queries
+    tfidf_train_relevancies = retrieveQueryAndGetRelevancies(tf_idf, train_queries, k=cfg.top_k)
+    tfidf_val_relevancies = retrieveQueryAndGetRelevancies(tf_idf, val_queries, k=cfg.top_k)
+    tfidf_test_relevancies = retrieveQueryAndGetRelevancies(tf_idf, test_queries, k=cfg.top_k)
+    
+    ### Evaluate TF-IDF class
+    tfidf_train_scores = Evaluate(tfidf_train_relevancies, train_queries)
+    tfidf_val_scores = Evaluate(tfidf_val_relevancies, val_queries)
+    tfidf_test_scores = Evaluate(tfidf_test_relevancies, test_queries)
+    
+    print(f'TF-IDF Train results: {tfidf_train_scores}')
+    print(f'TF-IDF Val results: {tfidf_val_scores}')
+    print(f'TF-IDF Test results: {tfidf_test_scores}')
 
 
-    # ### Initialize BM25 class
-    # bm25 = BM25(documents=corpus.all_documents)
-    #
-    # ### Retrieve top-k relevant queries using BM25
-    # bm25_train_relevancies = retrieveQueryAndGetRelevancies(bm25, train_queries, k=cfg.top_k)
-    # bm25_val_relevancies = retrieveQueryAndGetRelevancies(bm25, val_queries, k=cfg.top_k)
-    # bm25_test_relevancies = retrieveQueryAndGetRelevancies(bm25, test_queries, k=cfg.top_k)
-    #
-    # ### Evaluate BM25
-    # bm25_train_scores = Evaluate(bm25_train_relevancies, train_queries)
-    # bm25_val_scores = Evaluate(bm25_val_relevancies, val_queries)
-    # bm25_test_scores = Evaluate(bm25_test_relevancies, test_queries)
-    #
-    # print(f'BM25 Train results: {bm25_train_scores}')
-    # print(f'BM25 Val results: {bm25_val_scores}')
-    # print(f'BM25 Test results: {bm25_test_scores}')
+    ### Initialize BM25 class
+    bm25 = BM25(documents=corpus.all_documents)
+    
+    ### Retrieve top-k relevant queries using BM25
+    bm25_train_relevancies = retrieveQueryAndGetRelevancies(bm25, train_queries, k=cfg.top_k)
+    bm25_val_relevancies = retrieveQueryAndGetRelevancies(bm25, val_queries, k=cfg.top_k)
+    bm25_test_relevancies = retrieveQueryAndGetRelevancies(bm25, test_queries, k=cfg.top_k)
+    
+    ### Evaluate BM25
+    bm25_train_scores = Evaluate(bm25_train_relevancies, train_queries)
+    bm25_val_scores = Evaluate(bm25_val_relevancies, val_queries)
+    bm25_test_scores = Evaluate(bm25_test_relevancies, test_queries)
+    
+    print(f'BM25 Train results: {bm25_train_scores}')
+    print(f'BM25 Val results: {bm25_val_scores}')
+    print(f'BM25 Test results: {bm25_test_scores}')
 
     
     ### Train and evaluate one DPR model for each pooling type
